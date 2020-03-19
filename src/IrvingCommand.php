@@ -4,7 +4,7 @@ namespace Irving;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Routing\Router;
+use Illuminate\Routing\Route;
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -31,21 +31,7 @@ class IrvingCommand extends Command
      */
     public function handle(): void
     {
-        $this->exportBackend();
-
-        $this->info('Irving route and controller scaffolding generated successfully.');
-    }
-
-    /**
-     * Export the backend.
-     *
-     * @return void
-     */
-    protected function exportBackend(): void
-    {
-
         // Move controller(s).
-
         $filesystem = new Filesystem;
 		$controller_path = app_path('Http/Controllers/IrvingController.php');
 		if (!$filesystem->exists($controller_path)) {
@@ -69,15 +55,20 @@ class IrvingCommand extends Command
 				FILE_APPEND
 			);
 		}
+
+        $this->info('Irving route and controller scaffolding generated successfully.');
     }
 
 	/**
-	 * Check if the Irving route is preset.
+	 * Check if the Irving route is present.
 	 *
 	 * @return bool
 	 */
 	private function checkIrvingRoute(): bool
 	{
+		return true;
+		// @todo find best way to confirm if a route is.
+		$allRoutes = Route::getRoutes()->get();
 		return \in_array(
 			'irving/v1/components',
 			array_unique(
@@ -85,7 +76,7 @@ class IrvingCommand extends Command
 					function( $route ) {
 						return $route->uri();
 					},
-					Router::getRoutes() ?? []
+					$allRoutes
 				),
 				true
 			)
