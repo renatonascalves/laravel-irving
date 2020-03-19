@@ -4,7 +4,7 @@ namespace Irving;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Routing\Route;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -85,7 +85,7 @@ class IrvingCommand extends Command
 					function( $route ) {
 						return $route->uri();
 					},
-					Route::getRoutes() ?? []
+					Router::getRoutes() ?? []
 				),
 				true
 			)
