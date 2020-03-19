@@ -1,0 +1,502 @@
+<?php
+
+namespace Irving\Components;
+
+use Irving\Components\Traits\Query;
+
+/**
+ * Head.
+ */
+class Head extends Component
+{
+	use Query;
+
+	/**
+	 * Unique component slug.
+	 *
+	 * @var string
+	 */
+	public $name = 'head';
+
+	/**
+	 * Define default children.
+	 *
+	 * @return array Default children.
+	 */
+	public function default_children(): array
+	{
+		return [
+			( new Component() )
+				->set_name( 'title' )
+				->set_children( [ 'Site Name' ] ), // @todo Change it.
+		];
+	}
+
+	/**
+	 * Set the title tag.
+	 *
+	 * @param string $value The title value.
+	 * @return self
+	 */
+	public function set_title( $value ): self
+	{
+		// Loop through children and update the title component (which should
+		// exist since it's a default child).
+		foreach ( $this->children as &$child ) {
+			if ( 'title' === $child->name ) {
+				$child->children[0] = html_entity_decode( $value, ENT_QUOTES );
+			}
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Helper function for setting a canonical url.
+	 *
+	 * @param  string $url Canonical URL.
+	 * @return self
+	 */
+	public function set_canonical_url( $url ): self
+	{
+		return $this->add_link( 'canonical', $url );
+	}
+
+	/**
+	 * Helper function for adding a new meta tag.
+	 *
+	 * @param string $property Property value.
+	 * @param string $content  Content value.
+	 * @return self
+	 */
+	public function add_meta( string $property, string $content ) : self {
+		return $this->add_tag(
+			'meta',
+			[
+				'property' => $property,
+				'content'  => html_entity_decode( $content ),
+			]
+		);
+	}
+
+	/**
+	 * Helper function for adding a new link tag.
+	 *
+	 * @param string $rel  Rel value.
+	 * @param string $href Href value.
+	 * @return self
+	 */
+	public function add_link( $rel, $href ) {
+		return $this->add_tag(
+			'link',
+			[
+				'rel'  => $rel,
+				'href' => $href,
+			]
+		);
+	}
+
+	/**
+	 * Helper function for add a new script tag.
+	 *
+	 * @param string $src Script tag src url.
+	 * @param bool   $defer If script should defer loading until DOMContentLoaded.
+	 * @param bool   $async If script should load asynchronous.
+	 * @return self
+	 */
+	public function add_script( $src, $defer = true, $async = true ) : self {
+
+		// Attributes.
+		$attrs = [ 'src' => $src ];
+
+		if ( $defer ) {
+			$attrs['defer'] = $defer;
+		}
+
+		if ( $async ) {
+			$attrs['async'] = $async;
+		}
+
+		return $this->add_tag( 'script', $attrs );
+	}
+
+	/**
+	 * Helper function to quickly add a new tag.
+	 *
+	 * @param string $tag        Tag value.
+	 * @param array  $attributes Tag attributes.
+	 * @return self
+	 */
+	public function add_tag( $tag, $attributes = [] ) : self {
+
+		$component = new Component();
+		$component->set_name( $tag );
+		$component->merge_config( $attributes );
+
+		// Append this tag as a child component.
+		return $this->append_child( $component );
+	}
+
+	/**
+	 * Hook into post being set.
+	 *
+	 * @return self
+	 */
+	public function query_has_set() : self
+	{
+		$title = $this->get_the_head_title();
+		$title .= $this->get_trailing_title();
+		$this->set_title( $title );
+		$this->set_additional_meta_tags();
+		return $this;
+	}
+
+	/**
+	 * Get the head title based on the query set.
+	 *
+	 * @return string
+	 */
+	public function get_the_head_title(): string
+	{
+		switch ( true ) {
+			case $this->query->exists():
+				$title = 'Blog';
+				break;
+
+			default:
+				$title = '';
+		}
+
+		return $title;
+	}
+
+	/**
+	 * Get the trailing title.
+	 *
+	 * @return string
+	 */
+	public function get_trailing_title() {
+		return ' | ' . 'Renato Alves';
+	}
+
+	/**
+	 * Apply default, additional, meta tags.
+	 */
+	public function set_additional_meta_tags()
+	{
+		$tags = [];
+
+		if ( ! empty( $tags ) && is_array( $tags ) ) {
+			foreach ( $tags as $name => $content ) {
+				if ( ! empty( $content ) ) {
+					$this->add_tag(
+						'meta',
+						[
+							'name'    => $name,
+							'content' => $content,
+						]
+					);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Apply basic meta tags.
+	 */
+	public function set_standard_meta() {
+
+		// Meta description.
+		$meta_description = $this->get_meta_description();
+		if ( ! empty( $meta_description ) ) {
+			$this->add_tag(
+				'meta',
+				[
+					'name'    => 'description',
+					'content' => \esc_attr( $meta_description ),
+				]
+			);
+		}
+
+		// Filter the meta key where this is stored.
+		$meta_key      = apply_filters( 'wp_components_head_meta_keywords_key', '_meta_keywords' );
+		$meta_keywords = apply_filters(
+			'wp_components_head_meta_keywords',
+			explode( ',', get_post_meta( $this->post->ID, $meta_key, true ) ),
+			$this->post
+		);
+
+		if ( ! empty( $meta_keywords ) ) {
+			$this->add_tag(
+				'meta',
+				[
+					'name'    => 'keywords',
+					'content' => esc_attr( implode( ',', array_filter( $meta_keywords ) ) ),
+				]
+			);
+		}
+
+		// Canoncial url.
+		$meta_key = apply_filters( 'wp_components_head_canonical_url_key', '_canonical_url' );
+
+		$canonical_url = (string) get_post_meta( $this->post->ID, $meta_key, true );
+		if ( empty( $canonical_url ) ) {
+			$canonical_url = wp_get_canonical_url( $this->post->ID );
+		}
+
+		if ( ! empty( $canonical_url ) ) {
+			$this->set_canonical_url( $canonical_url );
+		}
+
+		// Deindex URL.
+		$meta_key = apply_filters( 'wp_components_head_deindex_url_key', '_deindex_google' );
+
+		$deindex_url = apply_filters(
+			'wp_components_head_deindex_url',
+			get_post_meta( $this->post->ID, $meta_key, true )
+		);
+
+		if ( absint( $deindex_url ) ) {
+			$this->add_tag(
+				'meta',
+				[
+					'name'    => 'robots',
+					'content' => 'noindex',
+				]
+			);
+		}
+	}
+
+	/**
+	 * Add basic open graph tags.
+	 */
+	public function set_open_graph_meta() {
+
+		// Define values that are used multiple times.
+		$description  = $this->get_social_description();
+		$image_source = $this->get_image_source();
+		$image_url    = '';
+		$permalink    = $this->wp_post_get_permalink();
+		$title        = $this->get_social_title();
+
+		// Open graph meta.
+		$this->add_meta(
+			'og:url',
+			apply_filters( 'wp_components_head_og_url', $permalink, $this->post->ID )
+		);
+		$this->add_meta(
+			'og:type',
+			apply_filters( 'wp_components_head_og_type', 'article', $this->post->ID )
+		);
+		$this->add_meta(
+			'og:title',
+			apply_filters( 'wp_components_head_og_title', $title, $this->post->ID )
+		);
+		$this->add_meta(
+			'og:description',
+			apply_filters( 'wp_components_head_og_description', $description, $this->post->ID )
+		);
+		$this->add_meta(
+			'og:site_name',
+			apply_filters( 'wp_components_head_og_site_name', get_bloginfo( 'name' ), $this->post->ID )
+		);
+
+		// Images.
+		if ( ! empty( $image_source ) ) {
+			$image_url = $image_source[0];
+			$this->add_meta(
+				'og:image',
+				apply_filters( 'wp_components_head_og_image', $image_source[0], $this->post->ID )
+			);
+			$this->add_meta(
+				'og:width',
+				apply_filters( 'wp_components_head_og_image_width', $image_source[1], $this->post->ID )
+			);
+			$this->add_meta(
+				'og:height',
+				apply_filters( 'wp_components_head_og_image_height', $image_source[2], $this->post->ID )
+			);
+			$this->add_meta(
+				'og:image:width',
+				apply_filters( 'wp_components_head_og_image_width', $image_source[1], $this->post->ID )
+			);
+			$this->add_meta(
+				'og:image:height',
+				apply_filters( 'wp_components_head_og_image_height', $image_source[2], $this->post->ID )
+			);
+		}
+
+		// Property specific meta.
+		$twitter_meta = [
+			'twitter:card'        => 'summary_large_image',
+			'twitter:title'       => apply_filters( 'wp_components_head_twitter_title', $title, $this->post->ID ),
+			'twitter:description' => apply_filters( 'wp_components_head_twitter_description', $description, $this->post->ID ),
+			'twitter:image'       => apply_filters( 'wp_components_head_twitter_image_url', $image_url, $this->post->ID ),
+			'twitter:url'         => apply_filters( 'wp_components_head_twitter_url', $permalink, $this->post->ID ),
+		];
+
+		// Twitter account.
+		$twitter_account = apply_filters( 'wp_components_head_twitter_account', '' );
+		if ( ! empty( $twitter_account ) ) {
+			$twitter_meta['twitter:site'] = '@' . str_replace( '@', '', $twitter_account );
+		}
+
+		// Add Twitter tags.
+		foreach ( $twitter_meta as $name => $content ) {
+			if ( empty( $content ) ) {
+				return;
+			}
+
+			$this->add_tag(
+				'meta',
+				[
+					'name'    => $name,
+					'content' => $content,
+				]
+			);
+		}
+	}
+
+	/**
+	 * Get the title used by the head tag.
+	 *
+	 * Priorities are,
+	 *  1. Meta key `_meta_title` (key filterable).
+	 *  3. Post title.
+	 *
+	 * @return string
+	 */
+	public function get_meta_title() : string {
+
+		// Filter the meta key where this is stored.
+		$meta_key = apply_filters( 'wp_components_head_meta_title_key', '_meta_title' );
+
+		$meta_title = (string) get_post_meta( $this->post->ID, $meta_key, true );
+
+		if ( empty( $meta_title ) ) {
+			$meta_title = $this->wp_post_get_title();
+		}
+
+		// Allow the title to be filtered.
+		$meta_title = apply_filters( 'wp_components_head_meta_title', $meta_title );
+
+		return $meta_title;
+	}
+
+	/**
+	 * Get the title used by open graph tags/social.
+	 *
+	 * Priorities are,
+	 *  1. Meta key `_social_title` (key filterable).
+	 *  2. Meta key `_meta_title` (key filterable).
+	 *  3. Post title.
+	 *
+	 * @return string
+	 */
+	public function get_social_title() : string {
+
+		// Filter the meta key where this is stored.
+		$meta_key = apply_filters( 'wp_components_head_social_title_key', '_social_title' );
+
+		$social_title = get_post_meta( $this->post->ID, $meta_key, true );
+
+		if ( empty( $social_title ) ) {
+			$social_title = $this->get_meta_title();
+		}
+
+		// Allow the social title to be filtered.
+		$social_title = apply_filters( 'wp_components_head_social_title', $social_title );
+
+		return $social_title;
+	}
+
+
+	/**
+	 * Get the meta description used by the head tag.
+	 *
+	 * Priorities are,
+	 *  1. Meta key `_meta_description` (key filterable).
+	 *  2. Post excerpt.
+	 *
+	 * @return string
+	 */
+	public function get_meta_description() : string {
+
+		// Filter the meta key where this is stored.
+		$meta_key = apply_filters( 'wp_components_head_meta_description_key', '_meta_description' );
+
+		$meta_description = (string) get_post_meta( $this->post->ID, $meta_key, true );
+
+		if ( empty( $meta_description ) ) {
+			$meta_description = $this->wp_post_get_excerpt();
+		}
+
+		// Allow the meta description to be filtered.
+		$meta_description = apply_filters( 'wp_components_head_meta_description', $meta_description );
+
+		return $meta_description;
+	}
+
+	/**
+	 * Get the meta description used by open graph tags/social.
+	 *
+	 * Priorities are,
+	 *  1. Meta key `_social_description` (key filterable).
+	 *  2. Meta key `_meta_description` (key filterable).
+	 *  3. Post excerpt.
+	 *
+	 * @return string
+	 */
+	public function get_social_description() : string {
+
+		// Filter the meta key where this is stored.
+		$meta_key = apply_filters( 'wp_components_head_social_description_key', '_social_description' );
+
+		$social_description = (string) get_post_meta( $this->post->ID, $meta_key, true );
+
+		if ( empty( $social_description ) ) {
+			$social_description = $this->get_meta_description();
+		}
+
+		// Allow the meta description to be filtered.
+		$social_description = apply_filters( 'wp_components_head_social_description', $social_description );
+
+		return $social_description;
+	}
+
+	/**
+	 * Get image source with its info.
+	 *
+	 * @return array
+	 */
+	protected function get_image_source() : array {
+
+		// Filter the meta key where this is stored.
+		$meta_key = apply_filters( 'wp_components_head_image_source_key', '_social_image_id' );
+
+		// Get filterable image url.
+		$image_id = apply_filters(
+			'wp_components_head_image_id',
+			absint( get_post_meta( $this->post->ID, $meta_key, true ) )
+		);
+
+		$image_source = apply_filters(
+			'wp_components_head_image_source',
+			wp_get_attachment_image_src( $image_id, 'full' )
+		);
+
+		// Fallback to featured image.
+		if ( empty( $image_source ) ) {
+			$image_source = wp_get_attachment_image_src( get_post_thumbnail_id( $this->post->ID ), 'full' );
+		}
+
+		// Fallback.
+		if ( empty( $image_source ) ) {
+			return [];
+		}
+
+		// Remove query string from url.
+		$image_source[0] = strtok( $image_source[0], '?' ) . '?resize=1200,600';
+		return $image_source;
+	}
+}
