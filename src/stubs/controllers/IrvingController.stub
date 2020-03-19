@@ -121,7 +121,7 @@ class IrvingController extends Controller
 		$request_url = route('irving.routing') . '/';
 
 		// Set headers and redirect permanently.
-		header( 'Access-Control-Allow-Origin: . '/' );
+		header( 'Access-Control-Allow-Origin: ' . '/' );
 		header( 'Access-Control-Allow-Credentials: true' );
 		redirect($request_url);
 		exit;

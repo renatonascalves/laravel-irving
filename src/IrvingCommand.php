@@ -32,7 +32,7 @@ class IrvingCommand extends Command
     {
         $this->exportBackend();
 
-        $this->info('Authentication scaffolding generated successfully.');
+        $this->info('Irving route and controller scaffolding generated successfully.');
     }
 
     /**
@@ -45,7 +45,7 @@ class IrvingCommand extends Command
 
         // Move controller(s).
         $filesystem = new Filesystem;
-        collect($filesystem->allFiles(__DIR__.'/../stubs/controllers'))
+        collect($filesystem->allFiles(__DIR__.'/stubs/controllers'))
             ->each(function (SplFileInfo $file) use ($filesystem) {
                 $filesystem->copy(
                     $file->getPathname(),
