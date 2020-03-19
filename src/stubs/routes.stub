@@ -1,3 +1,2 @@
 
-Route::get('/irving/v1/components', 'IrvingController@routing')->name('irving.routing')
-	->middleware(\Irving\Middleware\ForceTrailingSlashes::class);
+Route::get('/irving/v1/components', 'IrvingController@routing')->name('irving.routing');

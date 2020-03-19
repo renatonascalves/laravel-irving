@@ -18,7 +18,7 @@ class ForceTrailingSlashes
 	public function handle($request, Closure $next)
 	{
 		if (!preg_match('/.+\/$/', $request->getRequestUri())) {
-			return Redirect::to( Config::get('app.url') . $request->getRequestUri() . '/' );
+			return Redirect::to( 'http://127.0.0.1:8000' . $request->getRequestUri() . '/' ); // Config::get('app.url')
 		}
 		return $next($request);
 	}
