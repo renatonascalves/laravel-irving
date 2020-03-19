@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Config;
 class ForceTrailingSlashes
 {
 	/**
-	 * Handle an incoming request.
+	* Handle an incoming request.
 	*
 	* @param  \Illuminate\Http\Request  $request
 	* @param  \Closure  $next
@@ -17,8 +17,10 @@ class ForceTrailingSlashes
 	*/
 	public function handle($request, Closure $next)
 	{
+		// Config::get('app.url');
+
 		if (!preg_match('/.+\/$/', $request->getRequestUri())) {
-			return Redirect::to( 'http://127.0.0.1:8000' . $request->getRequestUri() . '/' ); // Config::get('app.url')
+			return Redirect::to( 'http://127.0.0.1:8000' . $request->getRequestUri() . '/' );
 		}
 		return $next($request);
 	}

@@ -17,27 +17,4 @@ class IrvingServiceProvider extends ServiceProvider
             ]);
         }
     }
-
-    /**
-     * Boot the service provider.
-     */
-    public function boot(): void
-    {
-        // $this->publishConfig();
-    }
-
-    /**
-     * Publish Irving Config.
-     */
-    protected function publishConfig(): void
-    {
-        /* $this->publishes( [
-            realpath(__DIR__ . '/./config/irving.php') => base_path('config/irving.php'),
-        ] );
-
-        $this->mergeConfigFrom(
-            realpath(__DIR__ . '/./config/irving.php'),
-            'irving'
-        ); */
-    }
 }

@@ -2,8 +2,9 @@
 
 namespace {{namespace}}Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use {{namespace}}Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Irving\Middleware\ForceTrailingSlashes;
 
 class IrvingController extends Controller
 {
@@ -76,7 +77,7 @@ class IrvingController extends Controller
      */
     public function __construct()
     {
-        $this->middleware(\Irving\Middleware\ForceTrailingSlashes::class);
+        $this->middleware(ForceTrailingSlashes::class);
     }
 
 	/**
@@ -89,7 +90,7 @@ class IrvingController extends Controller
 	{
 		// Path and context are required.
 		$request->validate([
-			'path'    => 'required|max:255',
+			'path'    => 'required',
 			'context' => 'required',
 		]);
 
@@ -107,12 +108,18 @@ class IrvingController extends Controller
 			ARRAY_FILTER_USE_KEY
 		);
 
+		// @todo Pending implementation.
 		// $this->query = $this->build_query();
 
 		return $this->get_data();
 	}
 
-	public function build_query() {}
+	/**
+	 * Build the query.
+	 *
+	 * @return array
+	 */
+	public function build_query(): array {}
 
 	/**
 	 * Get response data.
@@ -159,4 +166,3 @@ class IrvingController extends Controller
 		return $this->data;
 	}
 }
-
