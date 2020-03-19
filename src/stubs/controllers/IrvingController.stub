@@ -2,7 +2,6 @@
 
 namespace {{namespace}}Http\Controllers;
 
-use {{namespace}}Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Irving\Middleware\ForceTrailingSlashes;
 
