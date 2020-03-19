@@ -4,6 +4,7 @@ namespace Irving;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Routing\Route;
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -44,31 +45,52 @@ class IrvingCommand extends Command
     {
 
         // Move controller(s).
-        $filesystem = new Filesystem;
-        collect($filesystem->allFiles(__DIR__.'/stubs/controllers'))
-            ->each(function (SplFileInfo $file) use ($filesystem) {
-                $filesystem->copy(
-                    $file->getPathname(),
-                    app_path('Http/Controllers/'. Str::replaceLast('.stub', '.php', $file->getFilename()))
-                );
-            });
 
-        // Update with namespace.
-        file_put_contents(
-            app_path('Http/Controllers/IrvingController.php'),
-            $this->compileControllerStub()
-        );
+        $filesystem = new Filesystem;
+		$controller_path = app_path('Http/Controllers/IrvingController.php');
+		if (!$filesystem->exists($controller_path)) {
+			collect($filesystem->allFiles(__DIR__.'/stubs/controllers'))
+				->each(function (SplFileInfo $file) use ($filesystem) {
+					$filesystem->copy(
+						$file->getPathname(),
+						app_path('Http/Controllers/'. Str::replaceLast('.stub', '.php', $file->getFilename()))
+					);
+				});
+
+			// Update namespace
+			file_put_contents( $controller_path, $this->compileControllerStub() );
+		}
 
         // Move Irving route.
-        // @todo confirm if this route is already there so to avoid duplication.
-        file_put_contents(
-            base_path('routes/api.php'),
-            file_get_contents(__DIR__.'/stubs/routes.stub'),
-            FILE_APPEND
-        );
-
-        // @todo move config, if necessary.
+		if (!$this->checkIrvingRoute()) {
+			file_put_contents(
+				base_path('routes/api.php'),
+				file_get_contents(__DIR__.'/stubs/routes.stub'),
+				FILE_APPEND
+			);
+		}
     }
+
+	/**
+	 * Check if the Irving route is preset.
+	 *
+	 * @return bool
+	 */
+	private function checkIrvingRoute(): bool
+	{
+		return \in_array(
+			'irving/v1/components',
+			array_unique(
+				\array_map(
+					function( $route ) {
+						return $route->uri();
+					},
+					Route::getRoutes() ?? []
+				),
+				true
+			)
+		);
+	}
 
     /**
      * Compiles the "IrvingController" stub.

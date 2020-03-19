@@ -74,7 +74,7 @@ class IrvingController extends Controller
      *
      * @return void
      */
-    public function __construct(): void
+    public function __construct()
     {
         $this->middleware(\Irving\Middleware\ForceTrailingSlashes::class);
     }
@@ -107,35 +107,12 @@ class IrvingController extends Controller
 			ARRAY_FILTER_USE_KEY
 		);
 
-		// $this->force_trailing_slashes();
 		// $this->query = $this->build_query();
 
 		return $this->get_data();
 	}
 
 	public function build_query() {}
-
-	/**
-	 * Force trailing slashes on all non-404, and non-file requests.
-	 */
-	public function force_trailing_slashes()
-	{
-		$path = $this->path . '/';
-
-		if ( $path === $this->path ) {
-			return;
-		}
-
-		// Apply a trailing slash to the path.
-		$this->path  = $this->path . '/';
-		$request_url = route('irving.routing') . '/';
-
-		// Set headers and redirect permanently.
-		header( 'Access-Control-Allow-Origin: ' . '/' );
-		header( 'Access-Control-Allow-Credentials: true' );
-		redirect($request_url);
-		exit;
-	}
 
 	/**
 	 * Get response data.
