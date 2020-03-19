@@ -66,7 +66,7 @@ class IrvingCommand extends Command
 	 */
 	private function checkIrvingRoute(): bool
 	{
-		return true;
+		return false;
 
 		// @todo find best way to confirm if a route available.
 		$allRoutes = Route::getRoutes()->get();
