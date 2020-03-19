@@ -60,6 +60,7 @@ class IrvingCommand extends Command
         );
 
         // Move Irving route.
+        // @todo confirm if this route is already there so to avoid duplication.
         file_put_contents(
             base_path('routes/api.php'),
             file_get_contents(__DIR__.'/stubs/routes.stub'),
