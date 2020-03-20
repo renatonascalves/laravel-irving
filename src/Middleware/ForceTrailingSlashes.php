@@ -3,7 +3,7 @@
 namespace Irving\Middleware;
 
 use Closure;
-use Illuminate\Http\Client\Request;
+use Illuminate\Http\Request;
 
 class ForceTrailingSlashes
 {
