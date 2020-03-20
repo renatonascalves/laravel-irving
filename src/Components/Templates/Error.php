@@ -25,7 +25,8 @@ class Error extends Component {
 	 *
 	 * @return self
 	 */
-	public function query_has_set(): self {
+	public function query_has_set(): self
+	{
 		return $this
 			->append_child(
 				( new Body() )
@@ -40,7 +41,8 @@ class Error extends Component {
 	 *
 	 * @return array
 	 */
-	public function get_components(): array {
+	public function get_components(): array
+	{
 		return [];
 	}
 }
