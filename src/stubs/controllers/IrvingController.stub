@@ -87,12 +87,6 @@ class IrvingController extends Controller
 	 */
 	public function routing(Request $request): array
 	{
-		// Path and context are required.
-		$request->validate([
-			'path'    => 'required',
-			'context' => 'required',
-		]);
-
 		$this->request = $request;
 		$this->params  = $request->all();
 		$this->path    = $this->params['path'] ?? '';
