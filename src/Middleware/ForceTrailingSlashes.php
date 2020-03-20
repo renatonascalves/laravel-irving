@@ -16,7 +16,7 @@ class ForceTrailingSlashes
 	*/
 	public function handle(Request $request, Closure $next)
 	{
-		$appUrl = \config('app.url');
+		$appUrl = env('APP_URL', null);
 
 		if (empty($appUrl)) {
 			return $next($request);
