@@ -3,8 +3,7 @@
 namespace Irving\Middleware;
 
 use Closure;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Config;
+use Illuminate\Http\Client\Request;
 
 class ForceTrailingSlashes
 {
@@ -15,13 +14,28 @@ class ForceTrailingSlashes
 	* @param  \Closure  $next
 	* @return mixed
 	*/
-	public function handle($request, Closure $next)
+	public function handle(Request $request, Closure $next)
 	{
-		// Config::get('app.url');
+		$appUrl = \config('app.url');
 
-		if (!preg_match('/.+\/$/', $request->getRequestUri())) {
-			return Redirect::to( 'http://127.0.0.1:8000' . $request->getRequestUri() . '/' );
+		if (empty($appUrl)) {
+			return $next($request);
 		}
+
+		$params = $request->all();
+		$uri    = $request->getRequestUri();
+
+		// Redirect to ?path=/ (home)
+		if (empty($params['path'])) {
+			return \redirect()->to( $appUrl . $uri . '?path=/' );
+		} else {
+
+			// Force forward slash (/) to an url.
+			if (!preg_match('/.+\/$/', $uri)) {
+				return \redirect()->to( $appUrl . $uri . '/' );
+			}
+		}
+
 		return $next($request);
 	}
 }
