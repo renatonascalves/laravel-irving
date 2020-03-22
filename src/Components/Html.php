@@ -3,9 +3,9 @@
 namespace Irving\Components;
 
 /**
- * HTML.
+ * Html.
  */
-class HTML extends Component
+class Html extends Component
 {
 	/**
 	 * Unique component slug.
