@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<ruleset name="Coding standards for the Ralves Laravel app">
+
+	<!-- Set a description for this ruleset -->
+	<description>Coding standards that will be run on the Ralves Laravel app.</description>
+
+	<config name="encoding" value="utf-8"/>
+
+	<!-- Check code for cross-version PHP compatibility. -->
+	<!-- Will check the code compatiblity for PHP greater than 7.1 -->
+	<config name="testVersion" value="7.2-"/>
+
+	<!-- Load Laravel Coding standards -->
+	<rule ref="phpcs-laravel"/>
+
+	<!-- What to exclude -->
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/tests/*</exclude-pattern>
+
+	<!-- What to scan -->
+	<file>app/</file>
+
+	<!-- Enable colors in report -->
+	<arg name="colors"/>
+
+	<!-- Add source codes in the report -->
+	<arg value="psn" />
+	<arg name="extensions" value="php"/>
+	<arg name="parallel" value="20"/>
+</ruleset>

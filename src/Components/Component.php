@@ -7,7 +7,6 @@ namespace Irving\Components;
  */
 class Component implements \JsonSerializable
 {
-
 	/**
 	 * Unique component slug.
 	 *
@@ -78,8 +77,8 @@ class Component implements \JsonSerializable
 	/**
 	 * Component constructor.
 	 */
-	public function __construct() {
-
+	public function __construct()
+	{
 		// Set default configs using set_config to ensure callbacks fire.
 		foreach ( $this->default_config() as $key => $value ) {
 			$this->set_config( $key, $value );
@@ -94,7 +93,8 @@ class Component implements \JsonSerializable
 	 * @param  string $name New component name.
 	 * @return self
 	 */
-	public function set_name( string $name ) : self {
+	public function set_name( string $name ): self
+	{
 		$this->name = $name;
 		return $this;
 	}
@@ -162,7 +162,8 @@ class Component implements \JsonSerializable
 	 *                                  method.
 	 * @return self
 	 */
-	public function set_config( $key, $value = null, bool $do_callback = true ) : self {
+	public function set_config( $key, $value = null, bool $do_callback = true ): self
+	{
 		if ( is_array( $key ) && is_null( $value ) ) {
 			$this->config = $key;
 		} else {
@@ -184,7 +185,8 @@ class Component implements \JsonSerializable
 	 * @param string $key Config key.
 	 * @return mixed Config value or null.
 	 */
-	public function get_config( $key ) {
+	public function get_config( $key )
+	{
 		if ( array_key_exists( $key, $this->config ) ) {
 			return $this->config[ $key ];
 		}
@@ -197,7 +199,8 @@ class Component implements \JsonSerializable
 	 * @param array $new_config Config array to merge in.
 	 * @return self
 	 */
-	public function merge_config( array $new_config ) : self {
+	public function merge_config( array $new_config ): self
+	{
 		foreach ( $new_config as $key => $value ) {
 			$this->set_config( $key, $value );
 		}
@@ -393,7 +396,8 @@ class Component implements \JsonSerializable
 	 *
 	 * @return self
 	 */
-	public function is_valid() : self {
+	public function is_valid(): self
+	{
 		return $this->set_valid();
 	}
 
@@ -403,18 +407,14 @@ class Component implements \JsonSerializable
 	 * @param string $error_message Optional error message.
 	 * @return self
 	 */
-	public function has_error( $error_message = '' ) : self {
+	public function has_error( $error_message = '' ): self
+	{
 
 		// If a message exists and WP debugging is enabled for logging.
-		if (
-			! empty( $error_message )
-			&& defined( 'WP_DEBUG' )
-			&& WP_DEBUG
-			&& defined( 'WP_DEBUG_LOG' )
-			&& WP_DEBUG_LOG
-		) {
+		if ( ! empty( $error_message ) ) {
 			error_log( $error_message );
 		}
+
 		return $this->set_invalid();
 	}
 
@@ -425,7 +425,8 @@ class Component implements \JsonSerializable
 	 * @param bool   $force      Force the theme name, ignore the validation.
 	 * @return self
 	 */
-	public function set_theme( string $theme_name, bool $force = false ) : self {
+	public function set_theme( string $theme_name, bool $force = false ): self
+	{
 		// Only set theme if it's configured in the themes property OR no
 		// other themes are configured (besides `default`), implicitly
 		// indicating theme validation should not be used.
@@ -449,7 +450,8 @@ class Component implements \JsonSerializable
 	 * @param array  $theme_mapping Array in which keys are component $name properties and values are the theme to use for that component.
 	 * @return self
 	 */
-	public function set_child_themes( $group, $theme_mapping = [] ) : self {
+	public function set_child_themes( $group, $theme_mapping = [] ): self
+	{
 		// Recursively set themes for children.
 		if ( $this->is_valid_group( $group ) ) {
 			$components = $this->component_groups[ $group ];
@@ -474,7 +476,8 @@ class Component implements \JsonSerializable
 	 *
 	 * @return array
 	 */
-	public function to_array() : array {
+	public function to_array(): array
+	{
 
 		// For invalid components, append `-invalid` to the name to indicate
 		// that there was a fatal error and it should not be rendered. This
@@ -509,7 +512,8 @@ class Component implements \JsonSerializable
 	 * @param array $array        Array to convert.
 	 * @return array Updated array with camel-cased keys.
 	 */
-	public function camel_case_keys( $array ) : array {
+	public function camel_case_keys( array $array ): array
+	{
 		// Setup for recursion.
 		$camel_case_array = [];
 
@@ -550,8 +554,8 @@ class Component implements \JsonSerializable
 	 * @param string $string String to convert.
 	 * @return string
 	 */
-	public function camel_case_string( $string ): string {
-
+	public function camel_case_string( string $string ): string
+	{
 		// Replace any dashes with underscores.
 		$string = str_replace( '-', '_', $string );
 
@@ -580,7 +584,8 @@ class Component implements \JsonSerializable
 	 *
 	 * @return array
 	 */
-	public function jsonSerialize() : array {
+	public function jsonSerialize(): array
+	{
 		return $this->to_array();
 	}
 }

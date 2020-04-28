@@ -15,16 +15,6 @@ trait Query
 	public $query = null;
 
 	/**
-	 * Get the query posts.
-	 *
-	 * @return array
-	 */
-	public function get_posts(): array
-	{
-		return $this->query->posts ?? [];
-	}
-
-	/**
 	 * Get the queried object.
 	 *
 	 * @return object
