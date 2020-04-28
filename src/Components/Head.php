@@ -28,7 +28,7 @@ class Head extends Component
 		return [
 			(new Component())
 				->set_name('title')
-				->set_children([ $this->query->site() ]), // @todo Change it.
+				->set_children([ 'Site' ]), // @todo Change it.
 		];
 	}
 
